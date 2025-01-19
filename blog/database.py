@@ -9,3 +9,14 @@ SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
 Base = declarative_base()
 
+def get_db():
+    db = SessionLocal()
+    
+    try:
+        yield db
+    except Exception as e:
+        print("Error:", e)
+        # Ensure the exception is re-raised
+        raise
+    finally:
+        db.close()
