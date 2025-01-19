@@ -4,12 +4,13 @@ from .. import schemas, database, models
 from sqlalchemy.orm import Session
 
 router = APIRouter(                     #Create Router and Register this in main.py
+    prefix= '/blog',                    # By having this all the endpoint will be prefixed with /blog so no need add again and again for all endpoints
     tags=['Blogs']
 )        
 
 get_db = database.get_db
 
-@router.get("/blog", response_model=List[schemas.ShowBlog])
+@router.get("/", response_model=List[schemas.ShowBlog])
 def all(db: Session = Depends(get_db)):
     blogs = db.query(models.Blog).all()
     
@@ -19,7 +20,7 @@ def all(db: Session = Depends(get_db)):
     return blogs
 
 
-@router.post("/blog", status_code = status.HTTP_201_CREATED)       #This is to return the Status code back to the client
+@router.post("/", status_code = status.HTTP_201_CREATED)       #This is to return the Status code back to the client
 def create(request: schemas.Blog, db: Session = Depends(get_db)):
     new_blog = models.Blog(title=request.title, body= request.body, user_id = 1)
     db.add(new_blog)
@@ -28,7 +29,7 @@ def create(request: schemas.Blog, db: Session = Depends(get_db)):
     return new_blog
 
 
-@router.delete("/blog/{id}", status_code= status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}", status_code= status.HTTP_204_NO_CONTENT)
 def destroy(id, db: Session = Depends(get_db)):
     db.query(models.Blog).filter(models.Blog.id == id).delete(synchronize_session=False)
     db.commit()
@@ -36,7 +37,7 @@ def destroy(id, db: Session = Depends(get_db)):
     return {'done'}
 
 
-@router.put("/blog/{id}", status_code=status.HTTP_202_ACCEPTED)
+@router.put("/{id}", status_code=status.HTTP_202_ACCEPTED)
 def update(id: int, request: schemas.Blog, db: Session = Depends(get_db)):
     blog_query = db.query(models.Blog).filter(models.Blog.id == id)
     blog = blog_query.first()  # Check if the blog exists
@@ -53,7 +54,7 @@ def update(id: int, request: schemas.Blog, db: Session = Depends(get_db)):
 
     return {"detail": "Updated successfully"}
 
-@router.get("/blog/{id}", status_code= 200, response_model=schemas.ShowBlog)
+@router.get("/{id}", status_code= 200, response_model=schemas.ShowBlog)
 def show(id, response: Response, db: Session = Depends(get_db)):
     blog = db.query(models.Blog).filter(models.Blog.id == id).first()
     
